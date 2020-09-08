@@ -1,6 +1,20 @@
 const router = require('express').Router();
 let User = require('../models/user.model');
+let Files = require('../models/files.model');
 const jwt = require('jsonwebtoken');
+const upload = require('./FileUpload');
+
+router.post('/fileUpload', upload.single('file'), async (req, res, next) => {
+  const name = 'files/uploads/' + req.file.filename;
+  let newFile = new Files({ name });
+  try {
+    const result = await newFile.save();
+    res.status(200).send({ 'File Path : ': name });
+  }
+  catch (error) {
+    res.send(error);
+  }
+});
 
 router.route('/login').post(async (req, res) => {
   let user = {};
