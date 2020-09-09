@@ -3,11 +3,16 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const FilesSchema = new Schema({
-    name: {
+    userId: {
         type: String,
         required: true,
-        trim: true,
-        unique: true,
+        // trim: true
+    },
+    filePath: {
+        type: String,
+        required: true,
+        // trim: true,
+        // unique: true,
     },
 }, {
     timestamps: true,

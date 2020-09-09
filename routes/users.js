@@ -4,12 +4,29 @@ let Files = require('../models/files.model');
 const jwt = require('jsonwebtoken');
 const upload = require('./FileUpload');
 
-router.post('/fileUpload', upload.single('file'), async (req, res, next) => {
-  const name = 'files/uploads/' + req.file.filename;
-  let newFile = new Files({ name });
+router.post('/fileUpload', checkAuthentication, (req, res, next) => {
+  jwt.verify(req.token, 'secretkey123secretkey', async (error, user) => {
+    if (error) {
+      res.sendStatus(403);
+    }
+
+    try {
+      const _id = user.user.id;
+      let userExist = await User.findById({ _id });
+      req.user_id = _id;
+      next();
+    }
+    catch (error) {
+      res.sendStatus(404);
+    }
+  })
+}, upload.single('file'), async (req, res, next) => {
+  const filePath = 'files/uploads/' + req.file.filename;
+  const userId = req.user_id;
+  let newFile = new Files({ userId, filePath });
   try {
     const result = await newFile.save();
-    res.status(200).send({ 'File Path : ': name });
+    res.status(200).send({ 'File Path : ': filePath });
   }
   catch (error) {
     res.send(error);
