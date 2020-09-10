@@ -58,8 +58,10 @@ router.route('/signup').post((req, res) => {
   const name = req.body.name;
   const email = req.body.email;
   const password = req.body.password;
+  const role = req.body.role;
 
-  const newUser = new User({ name, email, password });
+
+  const newUser = new User({ name, email, password,role });
 
   newUser.save()
     .then(() => res.json('User added!'))
