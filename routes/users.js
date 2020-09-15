@@ -4,6 +4,8 @@ let Files = require('../models/files.model');
 const jwt = require('jsonwebtoken');
 const upload = require('./FileUpload');
 
+
+// file upload path //
 router.post('/fileUpload', checkAuthentication, (req, res, next) => {
   jwt.verify(req.token, 'secretkey123secretkey', async (error, user) => {
     if (error) {
