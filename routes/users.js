@@ -1,6 +1,37 @@
 const router = require('express').Router();
 let User = require('../models/user.model');
+let Files = require('../models/files.model');
 const jwt = require('jsonwebtoken');
+const upload = require('./FileUpload');
+
+router.post('/fileUpload', checkAuthentication, (req, res, next) => {
+  jwt.verify(req.token, 'secretkey123secretkey', async (error, user) => {
+    if (error) {
+      res.sendStatus(403);
+    }
+
+    try {
+      const _id = user.user.id;
+      let userExist = await User.findById({ _id });
+      req.user_id = _id;
+      next();
+    }
+    catch (error) {
+      res.sendStatus(404);
+    }
+  })
+}, upload.single('file'), async (req, res, next) => {
+  const filePath = 'files/uploads/' + req.file.filename;
+  const userId = req.user_id;
+  let newFile = new Files({ userId, filePath });
+  try {
+    const result = await newFile.save();
+    res.status(200).send({ 'File Path : ': filePath });
+  }
+  catch (error) {
+    res.send(error);
+  }
+});
 
 router.route('/login').post(async (req, res) => {
   let user = {};
@@ -11,6 +42,7 @@ router.route('/login').post(async (req, res) => {
 
   let userExist = await User.findOne({ email });
   if (userExist && userExist.email === email && userExist.password === password) {
+    user.id = userExist._id;
     jwt.sign({ user: user }, 'secretkey123secretkey', (error, token) => {
       res.status(200).json({
         "access_token": token
@@ -26,8 +58,10 @@ router.route('/signup').post((req, res) => {
   const name = req.body.name;
   const email = req.body.email;
   const password = req.body.password;
+  const role = req.body.role;
 
-  const newUser = new User({ name, email, password });
+
+  const newUser = new User({ name, email, password,role });
 
   newUser.save()
     .then(() => res.json('User added!'))
@@ -35,15 +69,20 @@ router.route('/signup').post((req, res) => {
 });
 
 router.route('/info').post(checkAuthentication, (req, res) => {
-
-  jwt.verify(req.token, 'secretkey123secretkey', (error, user) => {
+  jwt.verify(req.token, 'secretkey123secretkey', async (error, user) => {
     if (error) {
       res.sendStatus(403);
     }
-    else {
-      res.send(user);
+
+    try {
+      const _id = user.user.id;
+      let userExist = await User.findById({ _id });
+      res.status(200).send(userExist);
     }
-  });
+    catch (error) {
+      res.sendStatus(404);
+    }
+  })
 });
 
 function checkAuthentication(req, res, next) {

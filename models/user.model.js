@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
-
 const Schema = mongoose.Schema;
-
 const userSchema = new Schema({
   name: {
     type: String,
@@ -18,8 +16,13 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true,
-    minlength: 6
+    minlength: 6,
+    // select: false
   },
+  role: {
+    type: String,
+    required: true,
+  }
 }, {
   timestamps: true,
 });
